@@ -29,5 +29,5 @@ val appModule = module {
     single { GetHabitsUseCase(get()) }
 
     // ViewModel
-    viewModel { HomeViewModel(get()) }
+    viewModel { HomeViewModel(get(), get()) }
 }

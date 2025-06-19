@@ -27,6 +27,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +40,10 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val habits by viewModel.habits.collectAsState()
+
+    var showDialog by remember { mutableStateOf(false) }
+
+    var newHabitName by remember { mutableStateOf("") }
 
     Scaffold(
         topBar =
@@ -44,7 +54,7 @@ fun HomeScreen(
             },
         floatingActionButton = {
             FloatingActionButton(onClick = {
-
+                showDialog = true
             }) {
                 Text("+")
             }
@@ -73,16 +83,14 @@ fun HomeScreen(
                             name = habit.name,
                             isDone = habit.isDone,
                             onCheckedChange = { isChecked ->
-                                // метод обновления привычки
+                                viewModel.update(habit, isChecked)
                             }
                         )
 
                     }
                 }
             }
-        }
-    }
-}
+
 
 @Composable
 fun HabitItem(
@@ -115,3 +123,5 @@ fun HabitItem(
         }
     }
 }
+
+
