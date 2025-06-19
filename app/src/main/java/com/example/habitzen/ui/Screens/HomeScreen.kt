@@ -90,7 +90,45 @@ fun HomeScreen(
                     }
                 }
             }
-
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = {
+                        showDialog = false
+                        newHabitName = ""
+                    },
+                    title = { Text("New Habit") },
+                    text = {
+                        TextField(
+                            value = newHabitName,
+                            onValueChange = { newHabitName = it },
+                            placeholder = { Text("Enter habit name") }
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            // Добавляем новую привычку через ViewModel
+                            if (newHabitName.isNotBlank()) {
+                                viewModel.addHabit(newHabitName.trim())
+                                newHabitName = ""
+                                showDialog = false
+                            }
+                        }) {
+                            Text("Add")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            showDialog = false
+                            newHabitName = ""
+                        }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun HabitItem(
