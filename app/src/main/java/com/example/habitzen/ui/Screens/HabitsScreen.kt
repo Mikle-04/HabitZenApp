@@ -1,5 +1,6 @@
 package com.example.habitzen.ui.Screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -47,6 +48,10 @@ fun HabitsScreen(
 ) {
     val habits by viewModel.habits.collectAsState()
 
+    var habitToEdit by remember { mutableStateOf<HabitEntity?>(null) }
+
+    var newName by remember { mutableStateOf("") }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -80,10 +85,50 @@ fun HabitsScreen(
                     items(habits) { habit ->
                         HabitRow(
                             habit = habit,
-                            onDelete = { viewModel.deleteHabit(habit) }
+                            onDelete = { viewModel.deleteHabit(habit) },
+                            onEdit = {
+                                habitToEdit = habit
+                                newName = habit.name
+                            }
                         )
                     }
                 }
+            }
+            habitToEdit?.let { habit ->
+                AlertDialog(
+                    onDismissRequest = {
+                        habitToEdit = null
+                        newName = ""
+                    },
+                    title = { Text("Edit Habit") },
+                    text = {
+                        TextField(
+                            value = newName,
+                            onValueChange = { newName = it },
+                            placeholder = { Text("Habit name") }
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            if (newName.isNotBlank()) {
+                                // Вызываем ViewModel для обновления привычки
+                                viewModel.editHabit(habit, newName.trim())
+                                habitToEdit = null
+                                newName = ""
+                            }
+                        }) {
+                            Text("Update")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            habitToEdit = null
+                            newName = ""
+                        }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
             }
         }
     }
@@ -95,10 +140,13 @@ fun HabitsScreen(
 @Composable
 fun HabitRow(
     habit: HabitEntity,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onEdit() } // Клик по карточке = редактировать
     ) {
         Row(
             modifier = Modifier
@@ -117,3 +165,4 @@ fun HabitRow(
         }
     }
 }
+
