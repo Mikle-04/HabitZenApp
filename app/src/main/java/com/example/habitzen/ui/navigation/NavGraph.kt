@@ -4,6 +4,7 @@
     import androidx.navigation.NavHostController
     import androidx.navigation.compose.NavHost
     import androidx.navigation.compose.composable
+    import com.example.habitzen.ui.Screens.HabitsScreen
     import com.example.habitzen.ui.Screens.HomeScreen
 
     @Composable
@@ -16,7 +17,7 @@
                 HomeScreen(navController = navController)
             }
             composable("habits"){
-                HabitsScreen()
+                HabitsScreen(navController = navController)
             }
         }
     }

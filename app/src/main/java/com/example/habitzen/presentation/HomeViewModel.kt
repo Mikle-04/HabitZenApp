@@ -28,4 +28,10 @@ class HomeViewModel(
             repository.insertHabit(HabitEntity(name = name))
         }
     }
+
+    fun deleteHabit(habit: HabitEntity){
+        viewModelScope.launch{
+            repository.deleteHabit(habit)
+        }
+    }
 }
