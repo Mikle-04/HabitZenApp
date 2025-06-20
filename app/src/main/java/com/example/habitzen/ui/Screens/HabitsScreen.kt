@@ -1,19 +1,15 @@
 package com.example.habitzen.ui.Screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,8 +24,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextButton
@@ -38,42 +38,32 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
+import com.example.habitzen.data.db.HabitEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
+fun HabitsScreen(
     navController: NavHostController,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val habits by viewModel.habits.collectAsState()
 
-    var showDialog by remember { mutableStateOf(false) }
+    var habitToEdit by remember { mutableStateOf<HabitEntity?>(null) }
 
-    var newHabitName by remember { mutableStateOf("") }
+    var newName by remember { mutableStateOf("") }
 
     Scaffold(
-        topBar =
-            {
-                TopAppBar(
-                    title = { Text("Today") },
-                    actions = {
-                        // Кнопка для перехода на экран Habits
-                        IconButton(onClick = {
-                            navController.navigate("habits")
-                        }) {
-                            Icon(Icons.Default.List, contentDescription = "All Habits")
-                        }
+        topBar = {
+            TopAppBar(
+                title = { Text("All Habits") },
+                navigationIcon = {
+                    // Кнопка Назад
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                )
-            },
-        floatingActionButton = {
-            FloatingActionButton(onClick = {
-                showDialog = true
-            }) {
-                Text("+")
-            }
+                }
+            )
         }
-
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -82,7 +72,7 @@ fun HomeScreen(
         ) {
             if (habits.isEmpty()) {
                 Text(
-                    text = "No habits yet!",
+                    text = "No habits found! 📭",
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -93,47 +83,47 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(habits) { habit ->
-                        HabitItem(
-                            name = habit.name,
-                            isDone = habit.isDone,
-                            onCheckedChange = { isChecked ->
-                                viewModel.update(habit, isChecked)
+                        HabitRow(
+                            habit = habit,
+                            onDelete = { viewModel.deleteHabit(habit) },
+                            onEdit = {
+                                habitToEdit = habit
+                                newName = habit.name
                             }
                         )
-
                     }
                 }
             }
-            if (showDialog) {
+            habitToEdit?.let { habit ->
                 AlertDialog(
                     onDismissRequest = {
-                        showDialog = false
-                        newHabitName = ""
+                        habitToEdit = null
+                        newName = ""
                     },
-                    title = { Text("New Habit") },
+                    title = { Text("Edit Habit") },
                     text = {
                         TextField(
-                            value = newHabitName,
-                            onValueChange = { newHabitName = it },
-                            placeholder = { Text("Enter habit name") }
+                            value = newName,
+                            onValueChange = { newName = it },
+                            placeholder = { Text("Habit name") }
                         )
                     },
                     confirmButton = {
                         TextButton(onClick = {
-                            // Добавляем новую привычку через ViewModel
-                            if (newHabitName.isNotBlank()) {
-                                viewModel.addHabit(newHabitName.trim())
-                                newHabitName = ""
-                                showDialog = false
+                            if (newName.isNotBlank()) {
+                                // Вызываем ViewModel для обновления привычки
+                                viewModel.editHabit(habit, newName.trim())
+                                habitToEdit = null
+                                newName = ""
                             }
                         }) {
-                            Text("Add")
+                            Text("Update")
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = {
-                            showDialog = false
-                            newHabitName = ""
+                            habitToEdit = null
+                            newName = ""
                         }) {
                             Text("Cancel")
                         }
@@ -144,36 +134,35 @@ fun HomeScreen(
     }
 }
 
+/**
+ * Элемент списка привычек с кнопкой Удалить.
+ */
 @Composable
-fun HabitItem(
-    name: String,
-    isDone: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+fun HabitRow(
+    habit: HabitEntity,
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onEdit() } // Клик по карточке = редактировать
     ) {
         Row(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Чекбокс для отметки выполнена ли привычка
-            Checkbox(
-                checked = isDone,
-                onCheckedChange = onCheckedChange
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Название привычки
             Text(
-                text = name,
+                text = habit.name,
                 style = MaterialTheme.typography.bodyLarge
             )
+            IconButton(onClick = { onDelete() }) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete")
+            }
         }
     }
 }
-
 
