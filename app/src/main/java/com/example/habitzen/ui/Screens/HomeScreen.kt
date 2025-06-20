@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -38,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,13 +59,21 @@ fun HomeScreen(
                 TopAppBar(
                     title = { Text("Today") },
                     actions = {
-                        // Кнопка для перехода на экран Habits
+                        // Кнопка для экрана Habits
                         IconButton(onClick = {
                             navController.navigate("habits")
                         }) {
                             Icon(Icons.Default.List, contentDescription = "All Habits")
                         }
+
+                        // Кнопка для экрана History
+                        IconButton(onClick = {
+                            navController.navigate("history")
+                        }) {
+                            Icon(Icons.Default.Info, contentDescription = "History")
+                        }
                     }
+
                 )
             },
         floatingActionButton = {
