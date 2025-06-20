@@ -34,4 +34,11 @@ class HomeViewModel(
             repository.deleteHabit(habit)
         }
     }
+    fun editHabit(habit: HabitEntity, newName: String) {
+        viewModelScope.launch {
+            repository.updateHabit(
+                habit.copy(name = newName)
+            )
+        }
+    }
 }
