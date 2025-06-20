@@ -4,6 +4,7 @@
     import androidx.navigation.NavHostController
     import androidx.navigation.compose.NavHost
     import androidx.navigation.compose.composable
+    import com.example.habitzen.ui.Screens.HomeScreen
 
     @Composable
     fun NavGraph(navController: NavHostController) {
@@ -12,7 +13,10 @@
             startDestination = "home"
         ){
             composable("home"){
-                HomeScreen()
+                HomeScreen(navController = navController)
+            }
+            composable("habits"){
+                HabitsScreen()
             }
         }
     }

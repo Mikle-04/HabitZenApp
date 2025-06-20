@@ -27,16 +27,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.navigation.NavHostController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    navController: NavHostController,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val habits by viewModel.habits.collectAsState()
@@ -49,7 +55,15 @@ fun HomeScreen(
         topBar =
             {
                 TopAppBar(
-                    title = { Text("Today") }
+                    title = { Text("Today") },
+                    actions = {
+                        // Кнопка для перехода на экран Habits
+                        IconButton(onClick = {
+                            navController.navigate("habits")
+                        }) {
+                            Icon(Icons.Default.List, contentDescription = "All Habits")
+                        }
+                    }
                 )
             },
         floatingActionButton = {
