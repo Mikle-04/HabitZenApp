@@ -1,4 +1,4 @@
-package com.example.habitzen.data.db
+package com.example.habitzen.domain.models
 
 data class HistoryItem(
     val date: String,
