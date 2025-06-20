@@ -39,3 +39,81 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import com.example.habitzen.data.db.HabitEntity
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HabitsScreen(
+    navController: NavHostController,
+    viewModel: HomeViewModel = koinViewModel()
+) {
+    val habits by viewModel.habits.collectAsState()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("All Habits") },
+                navigationIcon = {
+                    // Кнопка Назад
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            if (habits.isEmpty()) {
+                Text(
+                    text = "No habits found! 📭",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(habits) { habit ->
+                        HabitRow(
+                            habit = habit,
+                            onDelete = { viewModel.deleteHabit(habit) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Элемент списка привычек с кнопкой Удалить.
+ */
+@Composable
+fun HabitRow(
+    habit: HabitEntity,
+    onDelete: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = habit.name,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            IconButton(onClick = { onDelete() }) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete")
+            }
+        }
+    }
+}
