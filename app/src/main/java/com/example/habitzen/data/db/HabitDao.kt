@@ -27,6 +27,14 @@ interface HabitDao {
     @Query("SELECT * FROM habits WHERE date = :date")
     fun getHabitsByDate(date: String): Flow<List<HabitEntity>>
 
-    @Query("SELECT date, COUNT(*) as doneCount FROM habits WHERE isDone = 1 GROUP BY date ORDER BY date DESC")
+
+    @Query("""
+        SELECT date,
+               COUNT(*) AS totalCount,
+               SUM(CASE WHEN isDone = 1 THEN 1 ELSE 0 END) AS doneCount
+        FROM habits
+        GROUP BY date
+        ORDER BY date DESC
+    """)
     fun getHistory(): Flow<List<HistoryItem>>
 }

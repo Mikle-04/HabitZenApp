@@ -23,4 +23,6 @@ class HabitRepositoryImpl(private val habitDao: HabitDao) : HabitRepository{
         habitDao.deleteHabit(habit)
     }
     override fun getHistory(): Flow<List<HistoryItem>> = habitDao.getHistory()
+
+    override fun getHabitsByDate(date: String) = habitDao.getHabitsByDate(date)
 }

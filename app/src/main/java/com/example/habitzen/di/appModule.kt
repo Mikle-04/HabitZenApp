@@ -33,5 +33,5 @@ val appModule = module {
 
     // ViewModel
     viewModel { HomeViewModel(get(), get()) }
-    viewModel { HistoryViewModel(get()) }
+    viewModel { HistoryViewModel(get(), get()) }
 }

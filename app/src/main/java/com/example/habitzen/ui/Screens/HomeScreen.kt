@@ -39,6 +39,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
+import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,11 +56,17 @@ fun HomeScreen(
 
     var newHabitName by remember { mutableStateOf("") }
 
+    val currentDayOfWeek = remember {
+        LocalDate.now().dayOfWeek
+            .getDisplayName(TextStyle.FULL, Locale("ru"))
+            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale("ru")) else it.toString() }
+    }
+
     Scaffold(
         topBar =
             {
                 TopAppBar(
-                    title = { Text("Today") },
+                    title = { Text(currentDayOfWeek) },
                     actions = {
                         // Кнопка для экрана Habits
                         IconButton(onClick = {
