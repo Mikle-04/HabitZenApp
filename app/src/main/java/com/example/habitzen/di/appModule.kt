@@ -5,6 +5,8 @@ import com.example.habitzen.data.db.AppDatabase
 import com.example.habitzen.data.repository.HabitRepositoryImpl
 import com.example.habitzen.domain.repository.HabitRepository
 import com.example.habitzen.domain.usecase.GetHabitsUseCase
+import com.example.habitzen.domain.usecase.GetHistoryUseCase
+import com.example.habitzen.presentation.HistoryViewModel
 import com.example.habitzen.presentation.HomeViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -27,7 +29,9 @@ val appModule = module {
 
     // Use Case
     single { GetHabitsUseCase(get()) }
+    single { GetHistoryUseCase(get()) }
 
     // ViewModel
     viewModel { HomeViewModel(get(), get()) }
+    viewModel { HistoryViewModel(get()) }
 }

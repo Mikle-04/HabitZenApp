@@ -8,6 +8,7 @@ import com.example.habitzen.domain.usecase.GetHabitsUseCase
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class HomeViewModel(
     private val getHabitsUseCase: GetHabitsUseCase,
@@ -25,7 +26,8 @@ class HomeViewModel(
 
     fun addHabit(name : String){
         viewModelScope.launch {
-            repository.insertHabit(HabitEntity(name = name))
+            val date = LocalDate.now().toString()
+            repository.insertHabit(HabitEntity(name = name, date = date))
         }
     }
 
