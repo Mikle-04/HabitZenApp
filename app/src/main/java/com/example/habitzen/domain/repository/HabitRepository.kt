@@ -10,4 +10,5 @@ interface HabitRepository {
     suspend fun updateHabit(habit: HabitEntity)
     suspend fun deleteHabit(habit: HabitEntity)
     fun getHistory(): Flow<List<HistoryItem>>
+    fun getHabitsByDate(date: String): Flow<List<HabitEntity>>
 }

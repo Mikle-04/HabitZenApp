@@ -58,17 +58,18 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    // ✅ Koin
+    //  Koin
     implementation(libs.koin.core)
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
 
-    // ✅ Room
+    // Room
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     implementation(libs.room.paging)
     ksp(libs.room.compiler)
 
-    // ✅ Navigation Compose
+    // Navigation Compose
     implementation(libs.navigation.compose)
+
 }
