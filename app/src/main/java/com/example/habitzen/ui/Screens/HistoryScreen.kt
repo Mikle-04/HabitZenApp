@@ -73,20 +73,19 @@ fun HistoryScreen(
             item {
                 Spacer(modifier = Modifier.height(32.dp))
                 Text(
-                    text = "Привычки на ${selectedDate}",
+                    text = "Привычки на $selectedDate",
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                val habitsForDate by viewModel.getHabitsByDate(selectedDate.toString()).collectAsState(
-                    initial = emptyList()
-                )
+                val habitsForDate by viewModel.getHabitsByDate(selectedDate.toString())
+                    .collectAsState(initial = emptyList())
 
                 if (habitsForDate.isEmpty()) {
                     Text("На выбранную дату привычек нет.")
                 } else {
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(habitsForDate) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        habitsForDate.forEach {
                             Card(modifier = Modifier.fillMaxWidth()) {
                                 Row(
                                     modifier = Modifier
