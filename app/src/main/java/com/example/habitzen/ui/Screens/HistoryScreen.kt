@@ -16,10 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.habitzen.domain.models.HistoryItem
 import com.example.habitzen.presentation.HistoryViewModel
 import org.koin.androidx.compose.koinViewModel
+import java.time.Instant
 import java.time.LocalDate
-
+import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,86 +31,72 @@ fun HistoryScreen(
 ) {
     val history by viewModel.history.collectAsState()
 
+    // Выбранная дата
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     val datePickerState = rememberDatePickerState()
     var showPicker by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-
-    // Текущая дата
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("History & Stats") },
+                title = { Text("История и статистика") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
                     }
                 },
                 actions = {
                     IconButton(onClick = { showPicker = true }) {
-                        Icon(Icons.Default.DateRange, contentDescription = "Pick Date")
+                        Icon(Icons.Default.DateRange, contentDescription = "Выбрать дату")
                     }
                 }
             )
         }
     ) { padding ->
-        Column(
-            Modifier
+        LazyColumn(
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("Progress Chart", style = MaterialTheme.typography.titleMedium)
-
-            Spacer(Modifier.height(16.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .background(Color.LightGray)
-            ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val barWidth = size.width / (history.size * 2f)
-                    history.forEachIndexed { index, item ->
-                        val barHeight = (size.height * (item.doneCount / 10f).coerceAtMost(1f))
-                        drawRoundRect(
-                            color = Color.Blue,
-                            topLeft = Offset(
-                                x = index * barWidth * 2 + barWidth / 2,
-                                y = size.height - barHeight
-                            ),
-                            size = androidx.compose.ui.geometry.Size(barWidth, barHeight),
-                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(10f, 10f)
-                        )
-                    }
+            if (history.isEmpty()) {
+                item {
+                    Text("История пока пуста.")
+                }
+            } else {
+                items(history) { item ->
+                    HistoryProgressItem(item)
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            item {
+                Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    text = "Привычки на ${selectedDate}",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Text("Habits for $selectedDate", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
+                val habitsForDate by viewModel.getHabitsByDate(selectedDate.toString()).collectAsState(
+                    initial = emptyList()
+                )
 
-            val habitsForDate by viewModel.getHabitsByDate(selectedDate.toString()).collectAsState(
-                initial = emptyList()
-            )
-
-            if (habitsForDate.isEmpty()) {
-                Text("No habits done for this day.")
-            } else {
-                LazyColumn {
-                    items(habitsForDate) {
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(it.name)
-                                if (it.isDone) Text("✅")
+                if (habitsForDate.isEmpty()) {
+                    Text("На выбранную дату привычек нет.")
+                } else {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(habitsForDate) {
+                            Card(modifier = Modifier.fillMaxWidth()) {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(it.name)
+                                    if (it.isDone) Text("✅ Выполнено")
+                                }
                             }
                         }
                     }
@@ -122,19 +110,20 @@ fun HistoryScreen(
             onDismissRequest = { showPicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        selectedDate = java.time.Instant.ofEpochMilli(millis)
-                            .atZone(java.time.ZoneId.systemDefault())
+                    val millis = datePickerState.selectedDateMillis
+                    if (millis != null) {
+                        selectedDate = Instant.ofEpochMilli(millis)
+                            .atZone(ZoneId.systemDefault())
                             .toLocalDate()
                     }
                     showPicker = false
                 }) {
-                    Text("OK")
+                    Text("ОК")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showPicker = false }) {
-                    Text("Cancel")
+                    Text("Отмена")
                 }
             }
         ) {
@@ -143,3 +132,26 @@ fun HistoryScreen(
     }
 }
 
+@Composable
+fun HistoryProgressItem(item: HistoryItem) {
+    Column {
+        Text(
+            text = item.date,
+            style = MaterialTheme.typography.titleMedium
+        )
+        Spacer(Modifier.height(4.dp))
+        LinearProgressIndicator(
+            progress = if (item.totalCount == 0) 0f else item.doneCount.toFloat() / item.totalCount,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(12.dp),
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = Color.LightGray
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "${item.doneCount} из ${item.totalCount} выполнено",
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+}
